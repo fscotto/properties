@@ -169,6 +169,41 @@ func TestGetProperties(t *testing.T) {
 	}
 }
 
+func TestRemove(t *testing.T) {
+	path, _ := filepath.Abs(FILENAME)
+	p := prop.New(path, FILENAME)
+	p.Put("key1", "value1")
+	p.Put("key2", "value2")
+	p.Put("key3", "value3")
+	p.Put("key4", "value4")
+	p.Put("key5", "value5")
+	lengthBefore := len(p.Values())
+	p.Remove("key4")
+	if p.Length() >= lengthBefore {
+		t.Logf("\n[!!] Failed error %s\n", "Property length is major")
+		t.Failed()
+	}
+}
+
+func TestRemoveWithKeyNotFound(t *testing.T) {
+	path, _ := filepath.Abs(FILENAME)
+	p := prop.New(path, FILENAME)
+	p.Put("key1", "value1")
+	p.Put("key2", "value2")
+	p.Put("key3", "value3")
+	p.Put("key4", "value4")
+	p.Put("key5", "value5")
+	lengthBefore := len(p.Values())
+	if _, err := p.Remove("KEY_NOT_FOUND"); err != nil {
+		t.Logf("\n[!!] Failed error %s\n", err.Error())
+		t.Failed()
+	}
+	if p.Length() != lengthBefore {
+		t.Logf("\n[!!] Failed error %s\n", "Property length is different")
+		t.Failed()
+	}
+}
+
 func TestDefaultLoad(t *testing.T) {
 	path, _ := os.Getwd()
 	p := prop.New(path, FILENAME)
@@ -181,6 +216,82 @@ func TestDefaultLoad(t *testing.T) {
 		}
 	} else if err != nil {
 		t.Logf("\n[!!] Failed error %s\n", err.Error())
+		t.Failed()
+	}
+}
+
+func TestDefaultStoreModifyOneValue(t *testing.T) {
+	path, _ := os.Getwd()
+	p := prop.New(path, FILENAME)
+	if _, err := p.DefaultLoad(); err != nil {
+		t.Logf("\n[!!] Failed error %s\n", err.Error())
+		t.FailNow()
+	}
+	keys := p.GetProperties()
+	if len(keys) > 0 {
+		key := keys[0]
+		p.Put(key, "MODIFY_TEST")
+
+		file, err := p.DefaultStore()
+		if err != nil {
+			t.Logf("\n[!!] Failed error %s\n", err.Error())
+			t.Failed()
+		}
+
+		if file == nil {
+			t.Logf("\n[!!] Failed error %s\n", "File is nil")
+			t.Failed()
+		}
+	}
+}
+
+func TestDefaultStoreAddNewValue(t *testing.T) {
+	path, _ := os.Getwd()
+	p := prop.New(path, FILENAME)
+	if _, err := p.DefaultLoad(); err != nil {
+		t.Logf("\n[!!] Failed error %s\n", err.Error())
+		t.FailNow()
+	}
+
+	p.Put("NEW_KEY", "NEW_VALUE")
+	file, err := p.DefaultStore()
+	if err != nil {
+		t.Logf("\n[!!] Failed error %s\n", err.Error())
+		t.Failed()
+	}
+
+	if file == nil {
+		t.Logf("\n[!!] Failed error %s\n", "File is nil")
+		t.Failed()
+	}
+}
+
+func TestDefaultStoreRemoveOneValue(t *testing.T) {
+	path, _ := os.Getwd()
+	p := prop.New(path, "testfile.properties")
+
+	// Add values in Properties object
+	p.Put("key1", "value1")
+	p.Put("key2", "value2")
+	p.Put("key3", "value3")
+	p.Put("key4", "value4")
+	p.Put("key5", "value5")
+
+	if p.Length() != 5 {
+		t.Logf("\n[!!] Failed error %s\n", "File is nil")
+		t.Failed()
+	}
+
+	p.Remove("key3")
+
+	file, err := p.DefaultStore()
+	if err != nil {
+		t.Logf("\n[!!] Failed error %s\n", err.Error())
+		t.Failed()
+	}
+
+	if file == nil {
+		t.Logf("\n[!!] Failed error %s\n", "File is nil")
 		t.Failed()
 	}
 }

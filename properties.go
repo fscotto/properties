@@ -2,6 +2,7 @@ package properties
 
 import (
 	e "errors"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -79,6 +80,19 @@ func (p Properties) Get(key string) (string, error) {
 	return p.values[key], nil
 }
 
+// Remove -- Remove property with key
+func (p *Properties) Remove(key string) (string, error) {
+	if key == "" || len(strings.TrimSpace(key)) == 0 {
+		return "", e.New("Key value is nil")
+	}
+	lenghtBefore := len(p.values)
+	delete(p.values, key)
+	if len(p.values) != lenghtBefore {
+		p.length--
+	}
+	return key, nil
+}
+
 // GetProperties -- Get all key value in Properties object
 func (p Properties) GetProperties() (keys []string) {
 	for key := range p.values {
@@ -103,7 +117,16 @@ func (p *Properties) Load(pf ParseFunction) (int, error) {
 	return len(m), nil
 }
 
-// Store -- Create or modify property file with
-func (p Properties) Store() {
-	// TODO method not implemeted
+// DefaultStore -- Create or modify property file
+func (p Properties) DefaultStore() (*os.File, error) {
+	return p.Store(defaultStore)
+}
+
+// Store -- Create or modify property file with specific StoringFunction
+func (p Properties) Store(sf StoringFunction) (*os.File, error) {
+	file, err := sf(p)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
