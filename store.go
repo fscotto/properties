@@ -10,7 +10,6 @@ import (
 // StoringFunction -- type
 type StoringFunction func(Properties) (*os.File, error)
 
-// FIXME when you remove a property it not work fine
 func defaultStore(p Properties) (*os.File, error) {
 	absolutePathFile, err := filepath.Abs(filepath.Join(p.Path(), p.FileName()))
 	if err != nil {
