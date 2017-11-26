@@ -9,10 +9,10 @@ import (
 )
 
 // ParseFunction -- type
-type ParseFunction func(string, string) (map[string]string, error)
+type ParseFunction func(string, string) (map[int]Pair, error)
 
 // Default parse method for parsing key - value file
-func defaultParse(path, fileName string) (m map[string]string, err error) {
+func defaultParse(path, fileName string) (m map[int]Pair, err error) {
 	absolutePathFile, err := filepath.Abs(filepath.Join(path, fileName))
 	if err != nil {
 		return nil, err
@@ -23,8 +23,9 @@ func defaultParse(path, fileName string) (m map[string]string, err error) {
 	}
 
 	defer file.Close()
-	m = make(map[string]string)
+	m = make(map[int]Pair)
 	reader := bufio.NewReader(file)
+	index := 0
 	for {
 		line, err := reader.ReadString('\n')
 
@@ -37,7 +38,7 @@ func defaultParse(path, fileName string) (m map[string]string, err error) {
 					value = strings.TrimSpace(strings.Replace(line[equal+1:], "\"", "", -1))
 				}
 				// assign the values map
-				m[key] = value
+				m[index] = Pair{key, value}
 			}
 		}
 		if err == io.EOF {
@@ -46,6 +47,7 @@ func defaultParse(path, fileName string) (m map[string]string, err error) {
 		if err != nil {
 			return nil, err
 		}
+		index++
 	}
 	return m, nil
 }

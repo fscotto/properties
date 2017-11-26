@@ -7,11 +7,16 @@ import (
 	"strings"
 )
 
+type Pair struct {
+	First  string
+	Second string
+}
+
 // Properties -- type
 type Properties struct {
 	fileName string
 	path     string
-	values   map[string]string
+	values   map[int]Pair
 	length   int
 }
 
@@ -20,7 +25,7 @@ func New(path, fileName string) Properties {
 	return Properties{
 		fileName: fileName,
 		path:     filepath.Clean(path),
-		values:   make(map[string]string),
+		values:   make(map[int]Pair),
 		length:   0,
 	}
 }
@@ -51,7 +56,7 @@ func (p Properties) Length() int {
 }
 
 // Values -- Getter values of property file
-func (p Properties) Values() map[string]string {
+func (p Properties) Values() map[int]Pair {
 	return p.values
 }
 
@@ -61,7 +66,7 @@ func (p *Properties) Put(key, value string) error {
 		return e.New("Key value is nil")
 	}
 	if p.values != nil {
-		p.values[key] = value
+		p.values[p.length+1] = Pair{key, value}
 		p.length++
 	} else {
 		return e.New("Property values is nil")
@@ -74,10 +79,11 @@ func (p Properties) Get(key string) (string, error) {
 	if key == "" || len(strings.TrimSpace(key)) == 0 {
 		return "", e.New("Key value is nil")
 	}
-	if _, ok := p.values[key]; !ok {
+	index := p.index(key)
+	if _, ok := p.values[index]; !ok {
 		return "", e.New("Key not found")
 	}
-	return p.values[key], nil
+	return p.values[index].Second, nil
 }
 
 // Remove -- Remove property with key
@@ -86,7 +92,8 @@ func (p *Properties) Remove(key string) (string, error) {
 		return "", e.New("Key value is nil")
 	}
 	lenghtBefore := len(p.values)
-	delete(p.values, key)
+	index := p.index(key)
+	delete(p.values, index)
 	if len(p.values) != lenghtBefore {
 		p.length--
 	}
@@ -95,10 +102,22 @@ func (p *Properties) Remove(key string) (string, error) {
 
 // GetProperties -- Get all key value in Properties object
 func (p Properties) GetProperties() (keys []string) {
-	for key := range p.values {
+	for i := range p.values {
+		key := p.values[i].First
 		keys = append(keys, key)
 	}
 	return keys
+}
+
+func (p Properties) index(key string) int {
+	index := -1
+	for i, item := range p.values {
+		if item.First == key {
+			index = i
+			break
+		}
+	}
+	return index
 }
 
 // DefaultLoad -- Load file in Properties object using default parse function
