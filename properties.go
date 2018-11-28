@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Pair --
 type Pair struct {
 	First  string
 	Second string
