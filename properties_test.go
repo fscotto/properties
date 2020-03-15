@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	prop "bitbucket.org/fabio_scotto_di_santolo/properties"
+	prop "github.com/fscotto/properties"
 )
 
 const FILENAME = "ini_test.properties"
@@ -212,7 +212,7 @@ func TestDefaultLoad(t *testing.T) {
 			t.Failed()
 		}
 		for key, value := range p.Values() {
-			t.Logf("%s = %s\n", key, value)
+			t.Logf("%d = %s\n", key, value)
 		}
 	} else if err != nil {
 		t.Logf("\n[!!] Failed error %s\n", err.Error())
